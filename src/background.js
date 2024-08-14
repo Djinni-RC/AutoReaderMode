@@ -32,7 +32,7 @@ async function handleWebNavigation(details) {
     if (
         details.frameId === 0 &&
         details.url &&
-        details.url.startsWith("http")
+        details.url.startsWith("https")
     ) {
         try {
             console.log("WebNavigation completed for URL:", details.url);
