@@ -1,4 +1,7 @@
-// Stolen from https://stackoverflow.com/a/28620642
+/* Stolen from;
+    Live: https://stackoverflow.com/a/28620642
+    Archived [2024-08-14]: https://web.archive.org/web/20240814122832/https://stackoverflow.com/questions/14500091/uncaught-referenceerror-importscripts-is-not-defined/28620642#28620642
+*/
 // proper initialization
 if ("function" === typeof importScripts) {
     importScripts("utils.js");
@@ -29,75 +32,38 @@ function initializeReaderSites() {
 }
 
 async function handleWebNavigation(details) {
-    if (
-        details.frameId === 0 &&
-        details.url &&
-        details.url.startsWith("https")
-    ) {
+    var urlObj = new URL(details.url)
+    var prot = urlObj.protocol
+    var validURL = (details.frameId === 0 && null != urlObj && prot == "https:")
+    if (validURL) {
         try {
-            console.log("WebNavigation completed for URL:", details.url);
-
-            const url = new URL(details.url);
-            const hostname = url.hostname;
-
-            const sites = await initializeReaderSites();
-
-            console.log(
-                "Checking if site is in enabled list:",
-                hostname,
-                sites
-            );
-
-            if (sites.includes(hostname)) {
-                console.log(
-                    "Site is in the enabled list, converting to reader mode:",
-                    hostname
-                );
-
-                const readerUrl = convertUrl(details.url);
-                if (null != readerUrl) {
+            if(sites.includes(urlObj.hostname)){
+                const newUrl = convertUrl(urlObj);
+                /* check if we get anything back */
+                if(null != newUrl){
+                    chrome.tabs.update(null,newUrl)
+                }else{
                     console.log(
-                        "Reader URL generated, updating tab:",
-                        readerUrl
-                    );
-                    chrome.tabs.update(
-                        details.tabId,
-                        { url: readerUrl },
-                        function () {
-                            if (chrome.runtime.lastError) {
-                                console.error(
-                                    "Failed to update tab to reader mode:",
-                                    chrome.runtime.lastError
-                                );
-                            } else {
-                                console.log(
-                                    `Successfully switched ${hostname} to reader mode.`
-                                );
-                            }
-                        }
-                    );
-                } else {
-                    console.error(
-                        "Failed to convert URL to reader mode:",
-                        details.url
-                    );
+                        "Did not receive a new URL from function."
+                    )
                 }
-            } else {
-                console.log("Site is not in the enabled list:", hostname);
             }
         } catch (e) {
             console.error("Error processing tab URL:", details.url, e);
         }
     } else {
-        if (!details.url) {
+        if (null == urlObj) {
             console.warn(
                 "WebNavigation URL is undefined or empty. This may happen for new tabs, discarded tabs, or internal Chrome pages."
             );
-        } else if (!details.url.startsWith("http")) {
+        }else if(prot != "https:"){
             console.warn(
-                "WebNavigation URL does not start with http/https, ignoring. URL:",
-                details.url
-            );
+                "Invalid protocol (not https)"
+            )
+        }else{
+            console.warn(
+                "Unspecified failure."
+            )
         }
     }
 }
