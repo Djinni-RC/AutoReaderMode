@@ -2,7 +2,9 @@ function convertUrl(originalUrl) {
     try {
         var isBase = originalUrl.toString().match(/^https{0,1}\:\/\/\w+\.\w+\/{0,1}$/gim);
         if(null == isBase){isBase = false}else{isBase = true}
-        if(isBase){
+        var singleArticle = document.getElementsByTagName("article")
+        if(singleArticle.length > 1){singleArticle = false}else{singleArticle = true}
+        if(isBase && singleArticle){
             return `read://${originalUrl}`;
         }else{
             return originalUrl

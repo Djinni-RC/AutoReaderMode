@@ -32,7 +32,7 @@ async function handleWebNavigation(details) {
                 console.log("Site is in the enabled list, converting to reader mode:", hostname);
 
                 const readerUrl = convertUrl(details.url);
-                if (readerUrl) {
+                if (null != readerUrl) {
                     console.log("Reader URL generated, updating tab:", readerUrl);
                     chrome.tabs.update(details.tabId, { url: readerUrl }, function () {
                         if (chrome.runtime.lastError) {
