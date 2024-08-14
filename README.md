@@ -1,3 +1,6 @@
+# This is a fork
+### Forked from [Djinni-RC](https://github.com/Djinni-RC)
+
 # Auto Reader Mode
 
 **Auto Reader Mode** is a Chrome extension that automatically enables reader mode on user-specified websites. This extension helps improve your reading experience by stripping away unnecessary elements like ads and menus, allowing you to focus on the content.
