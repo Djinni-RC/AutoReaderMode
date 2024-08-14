@@ -1,27 +1,26 @@
 /* Should probably add a custom rules document so users can change how specific sites should react */
-var customRules = {
+var GlobalCustomRules = {
     "medium.com": {
         article_urls: ".",
         article_class: "meteredContent",
-        article_amount: -1
+        article_amount: -1,
     },
-    "www.guardian.com": {
-        article_urls: "/.+\/articles\/.+/i",
+    "www.theguardian.com": {
+        article_urls: '/article/.+/',
         article_class: ".",
-        article_amount: 1
-    }
+        article_amount: 1,
+    },
 };
 /* This hardcoded set is really just for testing purposes */
 
 
-function convertUrl(originalUrl) {
+function convertUrl(webobj) {
     try {
-
-        //originalUrl.toString().match(/^https{0,1}\:\/\/(\w+\.\w+)\/{0,1}.+$/gim);
-        var customRuleset = customRules[originalUrl.hostname]
-        var articleCount = document.getElementsByTagName("article")
+        var oldurl = webobj.urlObject;
+        var customRuleset = GlobalCustomRules[oldurl.hostname]
+        var articleCount = webobj.domContent
         var matches = {
-            "base":((originalUrl.href == `https://${originalUrl.hostname}/` || originalUrl.href == `https://${originalUrl.hostname}`) || originalUrl.pathname == "/"),
+            "base":((oldurl.href == `https://${oldurl.hostname}/` || oldurl.href == `https://${oldurl.hostname}`) || oldurl.pathname == "/"),
             "url":false,
             "class":false,
             "amount":false
@@ -29,22 +28,37 @@ function convertUrl(originalUrl) {
 
         if(!matches.base){
             if(undefined != customRuleset){
-                matches.url = (originalUrl.pathname.toString().match(customRuleset.article_urls))
-                matches.amount = (articleCount.length > customRuleset.article_amount || customRuleset.article_amount == -1)
-                if(articleCount >= 1){
+                matches.url = (oldurl.pathname.toString().match(RegExp(customRuleset.article_urls,'gim')) && true)
+                matches.amount = (!(articleCount.length > customRuleset.article_amount) || customRuleset.article_amount == -1)
+                if(articleCount.length >= 1){
                     for(i=0;i<articleCount.length;i++){
-                        matches.class = (matches.class || (articleCount[i].class.match(customRules.article_class)))
+                        for(z=0;z<articleCount[i].className.split(/\s/).length;z++){
+                            matches.class = (matches.class || ((articleCount[i].classList[z].toString().match(RegExp(customRuleset.article_class))) && true))
+                        }
                     }
                 }
             }
         }
+
         if(!matches.base && matches.url && matches.class && matches.amount){
-            return `read://${originalUrl.href}`;
+            webobj.ReaderPath = `read://${oldurl.href}`;
         }else{
-            return null
+            webobj.success = false
         }
+        /*
+        debug stuff :)
+        console.log({
+            oldurl:oldurl,
+            customRuleset:customRuleset,
+            articleCount:articleCount,
+            matches:matches,
+            webobj:webobj
+        });
+        */
+        return webobj
     } catch (e) {
-        console.error('Invalid URL:', originalUrl);
+        console.error('Invalid URL:', e);
+        console.error(webobj)
         return null;
     }
 }
