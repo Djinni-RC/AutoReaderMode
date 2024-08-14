@@ -32,6 +32,7 @@ function initializeReaderSites() {
 }
 
 async function handleWebNavigation(details) {
+    const sites = await initializeReaderSites();
     var urlObj = new URL(details.url)
     var prot = urlObj.protocol
     var validURL = (details.frameId === 0 && null != urlObj && prot == "https:")
